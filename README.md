@@ -30,6 +30,8 @@ The workflow needs judgments that code can consume: a category, a number and a p
 - The public forum shows little demand for identity and governance. Two readings: much of it already ships in n8n's Business and Enterprise plans (SSO, LDAP, environments, Git, audit logging, log streaming, external secrets), and buyers who need more raise it in sales calls and support tickets. The next input would be CRM notes and tickets weighted by account size.
 - Integration requests are numerous, so that area tends to lead on volume; the top 10 table ranks individual requests and is the better read.
 
+What would make this a decision tool and not just a radar: see the [improvement plan](IMPROVEMENTS.md).
+
 ## Run it yourself
 
 1. Import `workflow.json` into n8n.
