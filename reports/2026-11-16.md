@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/quequegerones/n8n-enterprise-demand-digest/main/assets/n8n-logo-black-accent.png" alt="n8n" height="28">
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/quequegerones/n8n-enterprise-demand-digest/main/assets/n8n-logo-white-accent.png"><img src="https://raw.githubusercontent.com/quequegerones/n8n-enterprise-demand-digest/main/assets/n8n-logo-black-accent.png" alt="n8n" height="28"></picture>
 
 # Enterprise demand digest, week of 2026-11-16
 
