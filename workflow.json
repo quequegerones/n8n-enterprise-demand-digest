@@ -324,8 +324,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        1920,
-        100
+        2160,
+        200
       ],
       "parameters": {
         "authentication": "oAuth2",
@@ -354,8 +354,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        2160,
-        100
+        2400,
+        200
       ],
       "parameters": {
         "authentication": "oAuth2",
@@ -377,6 +377,178 @@
         "additionalParameters": {}
       },
       "id": "n14"
+    },
+    {
+      "name": "Form: run the digest",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        420
+      ],
+      "webhookId": "enterprise-demand-digest-form",
+      "parameters": {
+        "formTitle": "Enterprise demand digest",
+        "formDescription": "Runs the workflow live: reads n8n's public feature requests, classifies each one with Jev and ranks enterprise demand. Takes about 30 seconds. Built by Gonzalo Geron\u00e9s.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Your name (optional)",
+              "requiredField": false
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "buttonLabel": "Run the digest"
+        }
+      },
+      "id": "n20"
+    },
+    {
+      "name": "Recent run?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        420
+      ],
+      "parameters": {
+        "jsCode": "// Guard for public runs: at most one fresh run per hour. Otherwise serve the last report (no Jev calls).\nconst store = $getWorkflowStaticData('global');\nconst fresh = store.v === 2 && store.lastRunAt && (Date.now() - store.lastRunAt) < 60 * 60 * 1000;\nreturn [{ json: { cached: !!fresh, page: fresh ? store.lastPage : null } }];"
+      },
+      "id": "n21"
+    },
+    {
+      "name": "Serve cached?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        420
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.cached }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "n22"
+    },
+    {
+      "name": "Public run?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c2",
+              "leftValue": "={{ $('Form: run the digest').isExecuted }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "n23"
+    },
+    {
+      "name": "Markdown to HTML",
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        0
+      ],
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.markdown }}",
+        "destinationKey": "html",
+        "options": {
+          "tables": true,
+          "openLinksInNewWindow": true
+        }
+      },
+      "id": "n24"
+    },
+    {
+      "name": "Cache report page",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Wrap the rendered report for the form's completion screen and cache it for an hour.\nconst sheet = 'YOUR_SHEET_URL';\nconst repo = 'YOUR_REPO_URL';\nconst when = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';\nconst css = '<style>.digest{font-family:-apple-system,Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.5;color:#1f2937;text-align:left;max-width:960px;margin:0 auto;padding:8px 16px}'\n  + '.digest h1{font-size:24px;margin:8px 0 4px}.digest h2{font-size:18px;margin:24px 0 8px;border-bottom:1px solid #e5e7eb;padding-bottom:4px}'\n  + '.digest table{border-collapse:collapse;width:100%;margin:8px 0}.digest th{background:#f3f4f6;text-align:left}'\n  + '.digest th,.digest td{border:1px solid #e5e7eb;padding:6px 8px;vertical-align:top}.digest a{color:#ea4b71}.digest ul{padding-left:20px}'\n  + '.digest .meta{color:#6b7280;font-size:13px}.digest em{color:#6b7280}</style>';\nconst page = css + '<div class=\"digest\"><p class=\"meta\">Live run at ' + when + ' \u00b7 Backlog: <a href=\"' + sheet + '\" target=\"_blank\">Google Sheet</a> \u00b7 Code and weekly reports: <a href=\"' + repo + '\" target=\"_blank\">GitHub</a></p>' + $json.html + '</div>';\nconst store = $getWorkflowStaticData('global');\nstore.v = 2; store.lastRunAt = Date.now(); store.lastPage = page;\nreturn [{ json: { page } }];"
+      },
+      "id": "n25"
+    },
+    {
+      "name": "Show report",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        0
+      ],
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "showText",
+        "responseText": "={{ $json.page }}"
+      },
+      "id": "n26"
+    },
+    {
+      "name": "Show cached report",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        720,
+        320
+      ],
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "showText",
+        "responseText": "={{ $json.page }}"
+      },
+      "id": "n27"
     }
   ],
   "connections": {
@@ -488,7 +660,7 @@
       "main": [
         [
           {
-            "node": "Save dated report",
+            "node": "Public run?",
             "type": "main",
             "index": 0
           }
@@ -500,6 +672,86 @@
         [
           {
             "node": "Update latest report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form: run the digest": {
+      "main": [
+        [
+          {
+            "node": "Recent run?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recent run?": {
+      "main": [
+        [
+          {
+            "node": "Serve cached?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serve cached?": {
+      "main": [
+        [
+          {
+            "node": "Show cached report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Forum views to read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Public run?": {
+      "main": [
+        [
+          {
+            "node": "Markdown to HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save dated report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown to HTML": {
+      "main": [
+        [
+          {
+            "node": "Cache report page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cache report page": {
+      "main": [
+        [
+          {
+            "node": "Show report",
             "type": "main",
             "index": 0
           }
