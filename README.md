@@ -2,6 +2,8 @@
 
 *Independent project, not affiliated with n8n.*
 
+![The workflow in n8n](assets/workflow.png)
+
 An n8n workflow that reads n8n's public [Feature Requests forum](https://community.n8n.io/c/feature-requests/5) every Monday and answers one product question: **where is enterprise demand concentrating, and what should we say no to?**
 
 **Latest report: [reports/latest.md](reports/latest.md)** · **Run it live: [open the form](https://gmgerones.app.n8n.cloud/form/4e79744c-2183-4242-9083-e705217cf758)** (runs on my n8n instance with my connections; one fresh run per hour, otherwise it shows the cached result and says so)
