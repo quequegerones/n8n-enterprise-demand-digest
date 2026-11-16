@@ -1,8 +1,10 @@
 # Enterprise demand digest (n8n + Jev)
 
+*Independent project, not affiliated with n8n.*
+
 An n8n workflow that reads n8n's public [Feature Requests forum](https://community.n8n.io/c/feature-requests/5) every Monday and answers one product question: **where is enterprise demand concentrating, and what should we say no to?**
 
-**Latest report: [reports/latest.md](reports/latest.md)** · **Run it live: [open the form](https://gmgerones.app.n8n.cloud/form/4e79744c-2183-4242-9083-e705217cf758)** (runs on my n8n instance with my connections; results are cached for an hour)
+**Latest report: [reports/latest.md](reports/latest.md)** · **Run it live: [open the form](https://gmgerones.app.n8n.cloud/form/4e79744c-2183-4242-9083-e705217cf758)** (runs on my n8n instance with my connections; one fresh run per hour, otherwise it shows the cached result and says so)
 
 ## How it works
 
@@ -23,7 +25,7 @@ The workflow needs judgments that code can consume: a category, a number and a p
 
 ## Known limits
 
-- The public forum over-represents self-serve users. Identity, audit and data-residency needs usually surface in sales calls and support tickets, so the next input would be CRM notes and tickets weighted by account size.
+- The public forum shows little demand for identity and governance. Two readings: much of it already ships in n8n's Business and Enterprise plans (SSO, LDAP, environments, Git, audit logging, log streaming, external secrets), and buyers who need more raise it in sales calls and support tickets. The next input would be CRM notes and tickets weighted by account size.
 - Integration requests are numerous, so that area tends to lead on volume; the top 10 table ranks individual requests and is the better read.
 
 ## Run it yourself

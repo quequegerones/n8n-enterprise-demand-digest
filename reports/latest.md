@@ -1,4 +1,8 @@
+<img src="https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-logo.png" alt="n8n" height="32">
+
 # Enterprise demand digest, week of 2026-11-16
+
+*Independent analysis of n8n's public feature-request forum. Not affiliated with n8n.*
 
 88 feature requests from the [n8n community forum](https://community.n8n.io/c/feature-requests/5), classified with Jev (TypeSafe) and ranked by distinct demand × enterprise impact.
 
@@ -46,9 +50,9 @@ Needs tied to one setup or a niche tool: answer with a workaround, a template or
 - [Include Workflow and Project Metadata in Execution Data Reveal Audit Events](https://community.n8n.io/t/include-workflow-and-project-metadata-in-execution-data-reveal-audit-events/327536): high impact, little demand yet: validate with customers
 - [Allow editing Data Tables in Protected Environments (for environment-specific configurations)](https://community.n8n.io/t/allow-editing-data-tables-in-protected-environments-for-environment-specific-configurations/319693): high impact, little demand yet: validate with customers
 
-## Blind spot
+## Low forum signal: identity access and governance compliance
 
-Almost no forum demand for identity access and governance compliance. That doesn't mean enterprises don't need it: buyers who need SSO, audit logs or data residency raise it with sales and support, not on a public forum. Next input for this workflow: CRM deal notes and support tickets, weighted by account size.
+Almost no forum demand for identity access and governance compliance. Two readings: much of it already ships (SSO and LDAP, environments and Git version control on Business; audit logging, log streaming and external secret stores on Enterprise, per [n8n.io/pricing](https://n8n.io/pricing/)), and buyers who need more raise it in sales calls and support tickets rather than on a public forum. To tell them apart, the next input for this workflow would be CRM deal notes and support tickets, weighted by account size.
 
 ---
 
