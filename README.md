@@ -4,7 +4,7 @@
 
 ![The workflow in n8n](assets/workflow.png)
 
-An n8n workflow that reads n8n's public [Feature Requests forum](https://community.n8n.io/c/feature-requests/5) every Monday and answers one product question: **where is enterprise demand concentrating, and what should we say no to?**
+An n8n workflow that reads n8n's public [Feature Requests forum](https://community.n8n.io/c/feature-requests/5) every Monday and answers one product question: **what do public signals say about possible enterprise needs, and what could a partner or community node cover instead?**
 
 **Latest report: [reports/latest.md](reports/latest.md)** · **Run it live: [open the form](https://gmgerones.app.n8n.cloud/form/4e79744c-2183-4242-9083-e705217cf758)** (runs on my n8n instance with my connections; one fresh run per hour, otherwise it shows the cached result and says so)
 
@@ -15,7 +15,7 @@ An n8n workflow that reads n8n's public [Feature Requests forum](https://communi
    - *Product area* (choice): identity and access, governance and compliance, credentials and secrets, environments and DevOps, observability, AI agents, integrations, editor, other.
    - *Enterprise impact* (score 0 to 3): from "matters to individual builders" to "can block adoption, a security review or a renewal at a large company".
    - *One-off* (yes/no probability): is this tied to one company's setup or a niche tool?
-3. **Rank in code.** Priority = distinct demand (log of votes and replies) × enterprise impact above the small-team level × (1 − one-off). Many voices beat one loud request, and the weights live in code, so they can change without re-running the model.
+3. **Rank in code.** Priority = forum demand (log of votes and replies) × estimated enterprise impact above the small-team level × (1 − one-off). The log keeps one long thread from outranking a widely voted request, and the weights live in code, so they can change without re-running the model.
 4. **Act.**
    - A Google Sheets **backlog**, upserted by request id, with a recommendation per row: roadmap candidate, monitor, review, or not roadmap.
    - A public **form** that runs the whole pipeline on demand and shows the report on screen, with a one-hour cache so repeated clicks don't re-run the model.
