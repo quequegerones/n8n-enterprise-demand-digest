@@ -7,8 +7,8 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        0,
-        0
+        400,
+        128
       ],
       "parameters": {
         "rule": {
@@ -30,8 +30,8 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        0,
-        200
+        400,
+        320
       ],
       "parameters": {}
     },
@@ -41,8 +41,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        100
+        624,
+        -16
       ],
       "parameters": {
         "jsCode": "// Two views of n8n's public Feature Requests forum (Discourse JSON):\n// the most voted requests and the most recently active ones.\nconst base = 'https://community.n8n.io/c/feature-requests/5/l/latest.json';\nreturn [\n  { json: { view: 'top_voted_p0', url: `${base}?order=votes&page=0` } },\n  { json: { view: 'top_voted_p1', url: `${base}?order=votes&page=1` } },\n  { json: { view: 'recent_activity', url: `${base}?order=activity&page=0` } },\n];"
@@ -54,8 +54,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        480,
-        100
+        848,
+        -16
       ],
       "parameters": {
         "url": "={{ $json.url }}",
@@ -68,8 +68,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        720,
-        100
+        1072,
+        -16
       ],
       "parameters": {
         "jsCode": "// Flatten, dedupe and keep only the fields the classifier and the ranking need.\nconst seen = new Set();\nconst out = [];\nfor (const page of $input.all()) {\n  for (const t of page.json.topic_list?.topics ?? []) {\n    if (t.pinned || seen.has(t.id) || /^About the /.test(t.title)) continue;\n    seen.add(t.id);\n    out.push({ json: {\n      id: t.id,\n      title: t.title,\n      excerpt: (t.excerpt || '').replace(/\\s+/g, ' ').slice(0, 600),\n      tags: (t.tags || []).map(x => typeof x === 'string' ? x : x.name),\n      votes: t.vote_count ?? 0,\n      replies: t.reply_count ?? 0,\n      views: t.views ?? 0,\n      lastActivity: t.last_posted_at,\n      url: `https://community.n8n.io/t/${t.slug}/${t.id}`,\n    } });\n  }\n}\nreturn out;"
@@ -81,8 +81,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        960,
-        100
+        1296,
+        -16
       ],
       "parameters": {
         "jsCode": "// Build one Jev request per feature request. Three independent judgments over the same state,\n// asked together so they run in parallel: product area (choice), enterprise impact (score),\n// and whether it looks like a one-off (noul).\nconst QUESTIONS = {\n  \"theme\": {\n    \"type\": \"choice\",\n    \"instructions\": \"Which product area does this n8n feature request belong to? Judge by the need described in `title` and `excerpt`, not by the words used.\",\n    \"criteria\": {\n      \"identity_access\": \"Single sign-on, SAML, OIDC, LDAP, SCIM, user provisioning, roles, permissions or project-level access control\",\n      \"governance_compliance\": \"Audit logs, data retention, data residency, compliance, approvals or policy controls over what workflows can do\",\n      \"credentials_secrets\": \"Managing, sharing, selecting or securing credentials and secrets, including external secret stores\",\n      \"environments_devops\": \"Source control, dev/staging/prod environments, deployment, versioning, CI/CD, scaling, queue mode or high availability\",\n      \"observability_reliability\": \"Execution logs, monitoring, alerting, tracing, token usage, retries and error handling for production workflows\",\n      \"ai_agents\": \"AI agents, LLM, RAG or evaluation features\",\n      \"integrations_nodes\": \"A new node or integration with a specific external service, or new options on an existing node\",\n      \"editor_experience\": \"Canvas, editor, expressions, debugging or general usability for people building workflows\",\n      \"other\": \"None of the above\"\n    }\n  },\n  \"enterprise_impact\": {\n    \"type\": \"score\",\n    \"instructions\": \"How much does this request matter to a company that runs n8n as shared infrastructure across teams?\",\n    \"criteria\": [\n      \"Mostly matters to individual builders or hobby projects\",\n      \"Useful for small teams, but not a factor in company-wide adoption\",\n      \"Important for companies running n8n in production across several teams\",\n      \"Can block adoption, a security review or a renewal at large or regulated companies\"\n    ]\n  },\n  \"one_off\": {\n    \"type\": \"noul\",\n    \"instructions\": \"Is this a need tied to one specific company's setup or one niche tool, that few other organizations would share?\"\n  }\n};\nreturn $input.all().map(it => ({ json: {\n  ...it.json,\n  jevRequest: {\n    model: 'jev-latest',\n    state: { title: it.json.title, excerpt: it.json.excerpt, tags: it.json.tags },\n    questions: QUESTIONS,\n  },\n} }));"
@@ -94,8 +94,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1200,
-        100
+        1520,
+        -16
       ],
       "parameters": {
         "method": "POST",
@@ -121,8 +121,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1440,
-        100
+        1744,
+        -16
       ],
       "parameters": {
         "jsCode": "// Policy lives in code, judgments come from Jev. Change weights here without re-running inference.\n// Demand = distinct people asking (votes) plus discussion, on a log scale so one loud thread can't win alone.\n// Only impact above \"useful for small teams\" (score 1) counts as enterprise demand.\nconst topics = $('Prepare Jev requests').all().map(i => i.json);\nconst rows = $input.all().map((it, i) => {\n  const t = topics[i];\n  const a = it.json.answers || {};\n  const impact = a.enterprise_impact?.score ?? 0;            // 0..3\n  const oneOff = a.one_off?.noul ?? 0;                        // 0..1\n  const theme = a.theme?.choice ?? 'other';\n  const demand = Math.log2(1 + t.votes + 0.5 * t.replies);\n  const priority = demand * Math.max(0, impact - 1) / 2 * (1 - 0.7 * oneOff);\n  const flags = [];\n  if ((a.theme?.confidence ?? 1) < 0.5) flags.push('area unclear: human review');\n  if (oneOff > 0.6 && impact >= 1.5) flags.push('looks one-off: workaround or partner, not roadmap');\n  if (t.votes < 3 && impact >= 2.3) flags.push('high impact, little demand yet: validate with customers');\n  return { ...t, theme, themeConfidence: a.theme?.confidence, impact: +impact.toFixed(2), oneOff: +oneOff.toFixed(2),\n           demand: +demand.toFixed(2), priority: +priority.toFixed(2), flags };\n});\nconst themes = {};\nfor (const r of rows) {\n  const g = themes[r.theme] ??= { theme: r.theme, priority: 0, requests: 0, votes: 0, top: [] };\n  g.priority += r.priority; g.requests++; g.votes += r.votes; g.top.push(r);\n}\nconst ranked = Object.values(themes)\n  .map(g => ({ ...g, priority: +g.priority.toFixed(1), top: g.top.sort((x, y) => y.priority - x.priority).slice(0, 3) }))\n  .sort((x, y) => y.priority - x.priority);\nconst sayNo = rows.filter(r => r.flags.some(f => f.startsWith('looks one-off'))).sort((x, y) => y.votes - x.votes).slice(0, 5);\nconst review = rows.filter(r => r.flags.length && !sayNo.includes(r)).slice(0, 6);\nreturn [{ json: { generatedAt: new Date().toISOString(), analyzed: rows.length, themes: ranked, sayNo, review, rows } }];"
@@ -134,8 +134,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1680,
-        100
+        1968,
+        128
       ],
       "parameters": {
         "jsCode": "// Weekly digest in Markdown: GitHub renders it with tables and links, so the report is shareable as a URL.\nconst d = $json;\nconst date = d.generatedAt.slice(0, 10);\nconst area = t => t.replace(/_/g, ' ');\nconst cell = s => String(s).replace(/\\|/g, '\\\\|');\nconst link = r => `[${cell(r.title)}](${r.url})`;\nconst o = [];\no.push(`<picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://raw.githubusercontent.com/quequegerones/n8n-enterprise-demand-digest/main/assets/n8n-logo-white-accent.png\"><img src=\"https://raw.githubusercontent.com/quequegerones/n8n-enterprise-demand-digest/main/assets/n8n-logo-black-accent.png\" alt=\"n8n\" height=\"28\"></picture>`, '', `# Enterprise demand digest, week of ${date}`, '', '*Independent analysis of n8n\\'s public feature-request forum. Not affiliated with n8n.*', '');\no.push(`${d.analyzed} feature requests from the [n8n community forum](https://community.n8n.io/c/feature-requests/5), classified with Jev (TypeSafe) and ranked by distinct demand \u00d7 enterprise impact.`, '');\no.push('## Where enterprise demand concentrates', '', '| # | Area | Priority | Requests | Votes | Top request |', '|---|---|---|---|---|---|');\nd.themes.filter(g => g.priority > 0).slice(0, 6).forEach((g, i) =>\n  o.push(`| ${i + 1} | **${area(g.theme)}** | ${g.priority} | ${g.requests} | ${g.votes} | ${g.top[0] ? link(g.top[0]) : ''} |`));\nconst top = [...d.rows].filter(r => r.priority > 0).sort((a, b) => b.priority - a.priority).slice(0, 10);\no.push('', '## Top 10 roadmap candidates', '', '| Request | Area | Impact (0 to 3) | Votes | Priority |', '|---|---|---|---|---|');\nfor (const r of top) o.push(`| ${link(r)} | ${area(r.theme)} | ${r.impact} | ${r.votes} | ${r.priority} |`);\nif (d.sayNo.length) {\n  o.push('', '## Probably not roadmap', '', 'Needs tied to one setup or a niche tool: answer with a workaround, a template or a community node.', '');\n  for (const r of d.sayNo) o.push(`- ${link(r)} (${r.votes} votes)`);\n}\nif (d.review.length) {\n  o.push('', '## Needs a human look', '');\n  for (const r of d.review) o.push(`- ${link(r)}: ${r.flags.join('; ')}`);\n}\nconst quiet = ['identity_access', 'governance_compliance'].filter(t => !((d.themes.find(g => g.theme === t)?.priority ?? 0) > 1));\nif (quiet.length) {\n  o.push('', `## Low forum signal: ${quiet.map(area).join(' and ')}`, '', `Almost no forum demand for ${quiet.map(area).join(' and ')}. Two readings: much of it already ships (SSO and LDAP, environments and Git version control on Business; audit logging, log streaming and external secret stores on Enterprise, per [n8n.io/pricing](https://n8n.io/pricing/)), and buyers who need more raise it in sales calls and support tickets rather than on a public forum. To tell them apart, the next input for this workflow would be CRM deal notes and support tickets, weighted by account size.`);\n}\no.push('', '---', '', '*Method: votes and replies from community.n8n.io. Jev answers three typed questions per request: product area (choice), enterprise impact (score 0 to 3) and one-off probability (yes/no). Priority = log2(1 + votes + replies/2) \u00d7 max(0, impact \u2212 1)/2 \u00d7 (1 \u2212 0.7 \u00d7 one-off). Weights live in code and can change without re-running the model.*');\nreturn [{ json: { date, path: `reports/${date}.md`, markdown: o.join('\\n') } }];"
@@ -147,8 +147,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        200,
-        -260
+        -80,
+        -384
       ],
       "parameters": {
         "width": 760,
@@ -161,8 +161,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1680,
-        -120
+        1968,
+        -64
       ],
       "parameters": {
         "jsCode": "// One row per request for the backlog sheet. Upserted by id, so each run refreshes votes, scores and the recommendation.\nconst d = $json;\nreturn d.rows.map(r => ({ json: {\n  id: String(r.id), title: r.title, theme: r.theme.replace(/_/g, ' '),\n  enterprise_impact: r.impact, one_off: r.oneOff, votes: r.votes, replies: r.replies, priority: r.priority,\n  recommendation: r.flags.some(f => f.startsWith('looks one-off')) ? 'Not roadmap: workaround or partner'\n    : r.flags.length ? 'Review' : r.priority >= 2 ? 'Roadmap candidate' : 'Monitor',\n  flags: r.flags.join('; '), url: r.url, last_activity: (r.lastActivity || '').slice(0, 10), last_seen: d.generatedAt.slice(0, 10),\n} }));"
@@ -174,8 +174,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
-        1920,
-        -120
+        2192,
+        -64
       ],
       "parameters": {
         "operation": "appendOrUpdate",
@@ -324,8 +324,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        2160,
-        200
+        2416,
+        224
       ],
       "parameters": {
         "authentication": "oAuth2",
@@ -354,8 +354,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        2400,
-        200
+        2640,
+        224
       ],
       "parameters": {
         "authentication": "oAuth2",
@@ -383,8 +383,8 @@
       "type": "n8n-nodes-base.formTrigger",
       "typeVersion": 2.2,
       "position": [
-        0,
-        420
+        -48,
+        -112
       ],
       "webhookId": "enterprise-demand-digest-form",
       "parameters": {
@@ -411,8 +411,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        420
+        176,
+        -112
       ],
       "parameters": {
         "jsCode": "// Guard for public runs: at most one fresh run per hour. Otherwise serve the last report (no Jev calls).\nconst store = $getWorkflowStaticData('global');\nconst fresh = store.v === 5 && store.lastRunAt && (Date.now() - store.lastRunAt) < 60 * 60 * 1000;\nif (!fresh) return [{ json: { cached: false } }];\nconst fmt = t => new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }).format(new Date(t));\nconst ago = Math.max(1, Math.round((Date.now() - store.lastRunAt) / 60000));\nconst wait = Math.max(1, 60 - ago);\nconst banner = '<div class=\"banner cached\">Showing the report from a run ' + ago + ' min ago (' + fmt(store.lastRunAt) + '). To save model calls, live runs are limited to one per hour; the next fresh run is available in about ' + wait + ' min (' + fmt(store.lastRunAt + 3600000) + ').</div>';\nreturn [{ json: { cached: true, page: store.lastHead + banner + store.lastBody } }];"
@@ -424,8 +424,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        480,
-        420
+        400,
+        -112
       ],
       "parameters": {
         "conditions": {
@@ -459,8 +459,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1920,
-        100
+        2192,
+        128
       ],
       "parameters": {
         "conditions": {
@@ -494,8 +494,8 @@
       "type": "n8n-nodes-base.markdown",
       "typeVersion": 1,
       "position": [
-        2160,
-        0
+        2416,
+        32
       ],
       "parameters": {
         "mode": "markdownToHtml",
@@ -513,8 +513,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2400,
-        0
+        2640,
+        32
       ],
       "parameters": {
         "jsCode": "// Wrap the rendered report for the form's completion screen and cache it for an hour.\nconst sheet = 'YOUR_SHEET_URL';\nconst repo = 'YOUR_REPO_URL';\nconst now = Date.now();\nconst fmt = t => new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }).format(new Date(t));\nconst head = '<style>.digest{font-family:-apple-system,Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.5;color:#1f2937;text-align:left;max-width:960px;margin:0 auto;padding:8px 16px}'\n  + '.digest h1{font-size:24px;margin:8px 0 4px}.digest h2{font-size:18px;margin:24px 0 8px;border-bottom:1px solid #e5e7eb;padding-bottom:4px}'\n  + '.digest table{border-collapse:collapse;width:100%;margin:8px 0}.digest th{background:#f3f4f6;text-align:left}'\n  + '.digest th,.digest td{border:1px solid #e5e7eb;padding:6px 8px;vertical-align:top}.digest a{color:#ea4b71}.digest ul{padding-left:20px}'\n  + '.digest .meta{color:#6b7280;font-size:13px}.digest em{color:#6b7280}'\n  + '.banner{max-width:928px;margin:0 auto 8px;padding:8px 12px;border-radius:6px;font-family:-apple-system,Segoe UI,Arial,sans-serif;font-size:13px;text-align:left}'\n  + '.banner.fresh{background:#ecfdf5;color:#065f46}.banner.cached{background:#fffbeb;color:#92400e}</style>';\nconst body = '<div class=\"digest\"><p class=\"meta\">Backlog: <a href=\"' + sheet + '\" target=\"_blank\">Google Sheet</a> \u00b7 Code and weekly reports: <a href=\"' + repo + '\" target=\"_blank\">GitHub</a></p>' + $json.html.replace(/<source[^>]*>/g, '') + '</div>';\nconst store = $getWorkflowStaticData('global');\nstore.v = 5; store.lastRunAt = now; store.lastHead = head; store.lastBody = body;\nconst banner = '<div class=\"banner fresh\">Fresh run, just now (' + fmt(now) + '): forum data fetched and every request classified with Jev for you.</div>';\nreturn [{ json: { page: head + banner + body } }];"
@@ -526,8 +526,8 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        2640,
-        0
+        2864,
+        32
       ],
       "parameters": {
         "operation": "completion",
@@ -541,8 +541,8 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        720,
-        320
+        848,
+        -208
       ],
       "parameters": {
         "operation": "completion",
