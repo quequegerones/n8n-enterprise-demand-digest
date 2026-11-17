@@ -4,9 +4,9 @@
 
 *Independent analysis of n8n's public feature-request forum. Not affiliated with n8n.*
 
-88 feature requests from the [n8n community forum](https://community.n8n.io/c/feature-requests/5), classified with Jev (TypeSafe) and ranked by distinct demand × enterprise impact.
+88 feature requests from the [n8n community forum](https://community.n8n.io/c/feature-requests/5), classified with Jev (TypeSafe) and ranked by forum demand × estimated enterprise impact. These are public signals of possible enterprise needs, not account data.
 
-## Where enterprise demand concentrates
+## Where possible enterprise needs concentrate
 
 | # | Area | Priority | Requests | Votes | Top request |
 |---|---|---|---|---|---|
@@ -32,9 +32,9 @@
 | [Add concurrency in workflow settings](https://community.n8n.io/t/add-concurrency-in-workflow-settings/44103) | environments devops | 2.03 | 44 | 2.24 |
 | [Feature Request: Custom Nodes for Microsoft Office (Word, Excel, PowerPoint, Access, OneNote, etc.)](https://community.n8n.io/t/feature-request-custom-nodes-for-microsoft-office-word-excel-powerpoint-access-onenote-etc/78210) | integrations nodes | 2 | 31 | 2.14 |
 
-## Probably not roadmap
+## Partner or community node first?
 
-Needs tied to one setup or a niche tool: answer with a workaround, a template or a community node.
+Requests that look tied to one setup or a niche tool. A partner, a template or a community node may cover them, but commercial context and effort are missing: treat this as a question, not a no.
 
 - [Docusign Node](https://community.n8n.io/t/docusign-node/8059) (26 votes)
 - [Support Jotform Enterprise API domain (subdomain.jotform.com/API) in the JotForm node](https://community.n8n.io/t/support-jotform-enterprise-api-domain-subdomain-jotform-com-api-in-the-jotform-node/328901) (0 votes)

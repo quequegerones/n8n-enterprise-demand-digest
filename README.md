@@ -17,9 +17,9 @@ An n8n workflow that reads n8n's public [Feature Requests forum](https://communi
    - *One-off* (yes/no probability): is this tied to one company's setup or a niche tool?
 3. **Rank in code.** Priority = forum demand (log of votes and replies) × estimated enterprise impact above the small-team level × (1 − one-off). The log keeps one long thread from outranking a widely voted request, and the weights live in code, so they can change without re-running the model.
 4. **Act.**
-   - A Google Sheets **backlog**, upserted by request id, with a recommendation per row: roadmap candidate, monitor, review, or not roadmap.
+   - A Google Sheets **backlog**, upserted by request id, with a recommendation per row: roadmap candidate, monitor, review, or partner or community node first.
    - A public **form** that runs the whole pipeline on demand and shows the report on screen, with a one-hour cache so repeated clicks don't re-run the model.
-   - A Markdown **report** committed here every week (dated file plus `reports/latest.md`): top areas, top 10 candidates, what is probably not roadmap, what needs a human look, and blind spots.
+   - A Markdown **report** committed here every week (dated file plus `reports/latest.md`): top areas, top 10 candidates, what a partner or community node could cover first, what needs a human look, and blind spots.
 
 ## Why Jev instead of a chat model
 
